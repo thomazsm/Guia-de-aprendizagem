@@ -188,7 +188,7 @@ export default function App() {
             <FileText size={24} />
           </div>
           <div>
-            <h1 className="text-xl font-serif italic font-bold tracking-tight text-natural-primary leading-none">Guia Builder PEI</h1>
+            <h1 className="text-xl font-serif italic font-bold tracking-tight text-natural-primary leading-none">Monte seu Guia</h1>
             <p className="text-[10px] text-stone-400 dark:text-stone-500 font-bold uppercase tracking-[0.2em] mt-1">Horizonte Pedagógico</p>
           </div>
         </div>
