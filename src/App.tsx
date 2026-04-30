@@ -37,6 +37,8 @@ export default function App() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [cmspText, setCmspText] = useState("");
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "error" | "success" | "info" } | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [isPdfProcessing, setIsPdfProcessing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -61,9 +63,18 @@ export default function App() {
   }, [isDarkMode]);
 
   const resetForm = () => {
-    if (confirm("Deseja realmente limpar todos os campos?")) {
-      setData(INITIAL_DATA);
-    }
+    setShowConfirmReset(true);
+  };
+
+  const confirmReset = () => {
+    setData(INITIAL_DATA);
+    setShowConfirmReset(false);
+    showToast("Formulário limpo com sucesso!", "info");
+  };
+
+  const showToast = (message: string, type: "error" | "success" | "info" = "info") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
   };
 
   const updateField = (field: keyof GuiaData, value: any) => {
@@ -104,7 +115,7 @@ export default function App() {
         throw new Error("Resposta inválida da IA");
       }
     } catch (error) {
-      alert("Houve um erro ao processar o conteúdo. Tente copiar o texto de forma mais clara ou use um documento PDF mais simples.");
+      showToast("Houve um erro ao processar o conteúdo. Verifique sua chave de API ou tente colar o texto novamente.", "error");
     } finally {
       setIsAiLoading(false);
     }
@@ -115,7 +126,7 @@ export default function App() {
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      alert("Por favor, selecione um arquivo PDF.");
+      showToast("Por favor, selecione um arquivo PDF.", "error");
       return;
     }
 
@@ -125,7 +136,7 @@ export default function App() {
       setCmspText(text);
     } catch (error) {
       console.error("Erro ao ler PDF:", error);
-      alert("Não foi possível ler o arquivo PDF. Tente copiar e colar o texto manualmente.");
+      showToast("Não foi possível ler o arquivo PDF. Tente copiar e colar o texto manualmente.", "error");
     } finally {
       setIsPdfProcessing(false);
       // Reset input
@@ -146,7 +157,7 @@ export default function App() {
       await exportToWord(data);
     } catch (error) {
       console.error("Erro ao exportar Word:", error);
-      alert("Falha ao exportar para Word.");
+      showToast("Falha ao exportar para Word.", "error");
     }
   };
 
@@ -155,7 +166,7 @@ export default function App() {
       await exportToExcel(data);
     } catch (error) {
       console.error("Erro ao exportar Excel:", error);
-      alert("Falha ao exportar para Excel.");
+      showToast("Falha ao exportar para Excel.", "error");
     }
   };
 
@@ -164,7 +175,7 @@ export default function App() {
       await exportToPdf('print-document', `Guia_${data.componenteCurricular}_${data.anoTurma}.pdf`);
     } catch (error) {
       console.error("Erro ao exportar PDF:", error);
-      alert("Falha ao exportar para PDF.");
+      showToast("Falha ao exportar para PDF. Verifique se há bloqueios no navegador.", "error");
     }
   };
 
@@ -460,7 +471,7 @@ export default function App() {
         <div style={{ borderColor: '#000000', borderStyle: 'solid', borderWidth: '1px' }} className="mb-0 flex text-center min-h-[80px]">
             <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid' }} className="w-[15%] p-2 flex flex-col justify-center items-center">
                 <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg/300px-Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg.png" 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg.png" 
                   style={{ width: '48px', height: 'auto' }} 
                   className="mb-1" 
                   crossOrigin="anonymous" 
@@ -474,7 +485,7 @@ export default function App() {
             </div>
             <div className="w-[15%] p-2 flex flex-col justify-center items-center gap-1">
                  <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/300px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png" 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png" 
                   style={{ width: '48px', height: '32px' }} 
                   crossOrigin="anonymous" 
                 />
@@ -565,6 +576,62 @@ export default function App() {
 
       {/* AI Modal */}
       <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border ${
+              toast.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-600' : 
+              toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' :
+              'bg-blue-50 border-blue-200 text-blue-600'
+            }`}
+          >
+            {toast.type === 'error' ? <Trash2 size={18} /> : <Info size={18} />}
+            <span className="font-semibold text-sm">{toast.message}</span>
+          </motion.div>
+        )}
+
+        {showConfirmReset && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowConfirmReset(false)}
+              className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white dark:bg-stone-900 p-8 rounded-[32px] shadow-2xl border border-stone-200 dark:border-stone-800 max-w-sm w-full text-center space-y-6"
+            >
+              <div className="mx-auto w-16 h-16 bg-rose-50 dark:bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500">
+                <RefreshCw size={32} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold dark:text-white">Limpar Tudo?</h3>
+                <p className="text-sm text-stone-500">Essa ação não pode ser desfeita. Todos os campos serão apagados.</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowConfirmReset(false)}
+                  className="flex-1 px-6 py-3 rounded-xl border border-stone-200 dark:border-stone-800 font-semibold text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 transition-all font-sans"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmReset}
+                  className="flex-1 px-6 py-3 rounded-xl bg-rose-500 text-white font-semibold hover:bg-rose-600 transition-all font-sans"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {showAiModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div
