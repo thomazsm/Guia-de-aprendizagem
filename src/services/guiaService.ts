@@ -40,20 +40,38 @@ export const INITIAL_DATA: GuiaData = {
 
 export async function parseCMSPContent(text: string): Promise<Partial<GuiaData>> {
   try {
-    const response = await fetch("/api/parse-cmsp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
+      // 1. Tenta o caminho das funções do Netlify primeiro (Serverless)
+      // 2. Se falhar, tenta o caminho padrão (Desenvolvimento local)
+      const tryPaths = [
+        "/.netlify/functions/parse-cmsp",
+        "/api/parse-cmsp"
+      ];
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Erro no servidor");
-    }
+      let lastError = "";
+      for (const apiPath of tryPaths) {
+        try {
+          console.log(`Tentando API: ${apiPath}`);
+          const response = await fetch(apiPath, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
 
-    return await response.json();
+          if (response.ok) {
+            const data = await response.json();
+            return data;
+          }
+          
+          const errorText = await response.text();
+          lastError = `Status ${response.status}: ${errorText}`;
+          console.warn(`Falha na rota ${apiPath}:`, lastError);
+        } catch (e) {
+          lastError = e instanceof Error ? e.message : String(e);
+          console.warn(`Erro ao conectar com ${apiPath}:`, lastError);
+        }
+      }
+
+      throw new Error(`Não foi possível processar o documento. ${lastError}`);
   } catch (error) {
     console.error("Erro ao analisar conteúdo:", error);
     throw error;
