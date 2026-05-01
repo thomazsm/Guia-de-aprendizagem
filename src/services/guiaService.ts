@@ -40,38 +40,29 @@ export const INITIAL_DATA: GuiaData = {
 
 export async function parseCMSPContent(text: string): Promise<Partial<GuiaData>> {
   try {
-      // 1. Tenta o caminho das funções do Netlify primeiro (Serverless)
-      // 2. Se falhar, tenta o caminho padrão (Desenvolvimento local)
-      const tryPaths = [
-        "/.netlify/functions/parse-cmsp",
-        "/api/parse-cmsp"
-      ];
+      // Usando o caminho absoluto do Netlify para evitar problemas de redirecionamento
+      const apiPath = "/.netlify/functions/parse-cmsp";
+      
+      console.log(`Chamando API: ${apiPath}`);
+      const response = await fetch(apiPath, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
 
-      let lastError = "";
-      for (const apiPath of tryPaths) {
-        try {
-          console.log(`Tentando API: ${apiPath}`);
-          const response = await fetch(apiPath, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
-          });
+      const responseText = await response.text();
 
-          if (response.ok) {
-            const data = await response.json();
-            return data;
-          }
-          
-          const errorText = await response.text();
-          lastError = `Status ${response.status}: ${errorText}`;
-          console.warn(`Falha na rota ${apiPath}:`, lastError);
-        } catch (e) {
-          lastError = e instanceof Error ? e.message : String(e);
-          console.warn(`Erro ao conectar com ${apiPath}:`, lastError);
-        }
+      if (!response.ok) {
+        console.error("Erro da API (status", response.status, "):", responseText);
+        throw new Error(`Erro ${response.status}: Falha ao processar conteúdo.`);
       }
-
-      throw new Error(`Não foi possível processar o documento. ${lastError}`);
+      
+      try {
+        return JSON.parse(responseText);
+      } catch (e) {
+        console.error("Resposta não é JSON:", responseText);
+        throw new Error("O servidor retornou um formato inválido. Tente novamente.");
+      }
   } catch (error) {
     console.error("Erro ao analisar conteúdo:", error);
     throw error;

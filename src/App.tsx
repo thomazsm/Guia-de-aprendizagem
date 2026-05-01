@@ -471,10 +471,9 @@ export default function App() {
         <div style={{ borderColor: '#000000', borderStyle: 'solid', borderWidth: '1px' }} className="mb-0 flex text-center min-h-[80px]">
             <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid' }} className="w-[15%] p-2 flex flex-col justify-center items-center">
                 <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Brasao_do_estado_de_Sao_Paulo.svg/200px-Brasao_do_estado_de_Sao_Paulo.svg.png" 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg.png" 
                   style={{ width: '48px', height: 'auto' }} 
                   className="mb-1" 
-                  crossOrigin="anonymous" 
                   alt="Brasão SP"
                 />
                 <span style={{ color: '#000000' }} className="font-bold text-[8pt] leading-tight text-center uppercase">Programa Ensino Integral</span>
@@ -486,9 +485,8 @@ export default function App() {
             </div>
             <div className="w-[15%] p-2 flex flex-col justify-center items-center gap-1">
                  <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bandeira_do_estado_de_Sao_Paulo.svg/200px-Bandeira_do_estado_de_Sao_Paulo.svg.png" 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png" 
                   style={{ width: '48px', height: '32px' }} 
-                  crossOrigin="anonymous" 
                   alt="Bandeira SP"
                 />
                  <span style={{ color: '#000000' }} className="font-bold text-[8pt] uppercase leading-none">Secretaria da Educação</span>
