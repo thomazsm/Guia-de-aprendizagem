@@ -471,8 +471,8 @@ export default function App() {
         <div style={{ borderColor: '#000000', borderStyle: 'solid', borderWidth: '1px' }} className="mb-0 flex text-center min-h-[80px]">
             <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid' }} className="w-[15%] p-2 flex flex-col justify-center items-center">
                 <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg.png" 
-                  style={{ width: '48px', height: 'auto' }} 
+                  src="https://raw.githubusercontent.com/lucide-react/lucide/main/icons/landmark.svg" 
+                  style={{ width: '32px', height: '32px', opacity: 0.8 }} 
                   className="mb-1" 
                   alt="Brasão SP"
                 />
@@ -485,8 +485,8 @@ export default function App() {
             </div>
             <div className="w-[15%] p-2 flex flex-col justify-center items-center gap-1">
                  <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png" 
-                  style={{ width: '48px', height: '32px' }} 
+                  src="https://raw.githubusercontent.com/lucide-react/lucide/main/icons/flag.svg" 
+                  style={{ width: '32px', height: '24px', opacity: 0.8 }} 
                   alt="Bandeira SP"
                 />
                  <span style={{ color: '#000000' }} className="font-bold text-[8pt] uppercase leading-none">Secretaria da Educação</span>
@@ -523,7 +523,7 @@ export default function App() {
         </div>
 
         {data.aes.map((item, idx) => (
-            <div key={idx} style={{ borderColor: '#000000', borderLeftWidth: '1px', borderRightWidth: '1px', borderBottomWidth: '1px', borderStyle: 'solid', color: '#000000' }} className="grid grid-cols-[1fr_50px_50px_1fr] min-h-[30px] text-[10px]">
+            <div key={`${idx}-${item.aprendizagem.slice(0, 10)}`} style={{ borderColor: '#000000', borderLeftWidth: '1px', borderRightWidth: '1px', borderBottomWidth: '1px', borderStyle: 'solid', color: '#000000' }} className="grid grid-cols-[1fr_50px_50px_1fr] min-h-[30px] text-[10px]">
                 <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid', color: '#000000' }} className="p-1.5 whitespace-pre-wrap leading-tight">{item.aprendizagem}</div>
                 <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid', color: '#000000' }} className="p-1 flex items-center justify-center text-center text-[9px]">
                   {item.inicio ? new Date(item.inicio + 'T00:00:00').toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'}) : '-'}
@@ -533,18 +533,19 @@ export default function App() {
                 </div>
                 <div style={{ color: '#000000' }} className="p-1.5 whitespace-pre-wrap font-medium text-[9px] leading-tight">
                   {item.conteudos.split('\n').map((line, lIdx) => {
+                    const lineKey = `${idx}-${lIdx}`;
                     if (line.trim().startsWith('G1:') || line.trim().startsWith('G2:') || line.trim().startsWith('G3:')) {
                       const [label, ...rest] = line.split(':');
                       return (
-                        <div key={lIdx} className="mb-0.5">
+                        <div key={lineKey} className="mb-0.5">
                           <span style={{ textDecorationColor: '#000000' }} className="font-bold underline">{label}:</span>{rest.join(':')}
                         </div>
                       );
                     }
                     if (line.trim().startsWith('Aulas:')) {
-                      return <div key={lIdx} style={{ color: '#115e59' }} className="font-bold mt-1">{line}</div>;
+                      return <div key={lineKey} style={{ color: '#115e59' }} className="font-bold mt-1">{line}</div>;
                     }
-                    return <div key={lIdx}>{line}</div>;
+                    return <div key={lineKey}>{line}</div>;
                   })}
                 </div>
             </div>

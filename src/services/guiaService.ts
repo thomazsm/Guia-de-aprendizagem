@@ -40,8 +40,7 @@ export const INITIAL_DATA: GuiaData = {
 
 export async function parseCMSPContent(text: string): Promise<Partial<GuiaData>> {
   try {
-      // Usando o caminho absoluto do Netlify para evitar problemas de redirecionamento
-      const apiPath = "/.netlify/functions/parse-cmsp";
+      const apiPath = "/api/parse-cmsp";
       
       console.log(`Chamando API: ${apiPath}`);
       const response = await fetch(apiPath, {
