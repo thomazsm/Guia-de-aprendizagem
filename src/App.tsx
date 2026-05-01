@@ -335,7 +335,7 @@ export default function App() {
           <div className="space-y-6">
             {data.aes.map((item, idx) => (
               <motion.div
-                key={idx}
+                key={`aes-row-${idx}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="p-8 bg-stone-50 dark:bg-stone-800/30 rounded-[28px] border border-stone-200 dark:border-stone-800 relative group transition-colors hover:border-natural-primary/30"
@@ -471,8 +471,8 @@ export default function App() {
         <div style={{ borderColor: '#000000', borderStyle: 'solid', borderWidth: '1px' }} className="mb-0 flex text-center min-h-[80px]">
             <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid' }} className="w-[15%] p-2 flex flex-col justify-center items-center">
                 <img 
-                  src="https://raw.githubusercontent.com/lucide-react/lucide/main/icons/landmark.svg" 
-                  style={{ width: '32px', height: '32px', opacity: 0.8 }} 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bras%C3%A3o_do_estado_de_S%C3%A3o_Paulo.svg.png" 
+                  style={{ width: '40px', height: 'auto' }} 
                   className="mb-1" 
                   alt="Brasão SP"
                 />
@@ -485,8 +485,8 @@ export default function App() {
             </div>
             <div className="w-[15%] p-2 flex flex-col justify-center items-center gap-1">
                  <img 
-                  src="https://raw.githubusercontent.com/lucide-react/lucide/main/icons/flag.svg" 
-                  style={{ width: '32px', height: '24px', opacity: 0.8 }} 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bandeira_do_estado_de_S%C3%A3o_Paulo.svg/200px-Bandeira_do_estado_de_S%C3%A3o_Paulo.svg.png" 
+                  style={{ width: '44px', height: 'auto' }} 
                   alt="Bandeira SP"
                 />
                  <span style={{ color: '#000000' }} className="font-bold text-[8pt] uppercase leading-none">Secretaria da Educação</span>
@@ -533,7 +533,7 @@ export default function App() {
                 </div>
                 <div style={{ color: '#000000' }} className="p-1.5 whitespace-pre-wrap font-medium text-[9px] leading-tight">
                   {item.conteudos.split('\n').map((line, lIdx) => {
-                    const lineKey = `${idx}-${lIdx}`;
+                    const lineKey = `print-line-${idx}-${lIdx}`;
                     if (line.trim().startsWith('G1:') || line.trim().startsWith('G2:') || line.trim().startsWith('G3:')) {
                       const [label, ...rest] = line.split(':');
                       return (

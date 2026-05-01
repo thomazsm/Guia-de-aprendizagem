@@ -23,8 +23,7 @@ async function startServer() {
       }
 
       const ai = new GoogleGenAI({ apiKey });
-      const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+      
       const prompt = `
         Você é um assistente especializado em Educação da Secretaria da Educação de SP (SEDUC).
         O professor forneceu um documento de "Escopo e Sequência" ou "Guia Priorizado" do bimestre.
@@ -49,36 +48,49 @@ async function startServer() {
            1ºB: 02/02-20/04 | 2ºB: 22/04-26/06 | 3ºB: 13/07-18/09 | 4ºB: 21/09-23/12.
         7. Verifique se Unidade Regional e Escola estão no texto.
 
-        Retorne APENAS um objeto JSON válido (sem markdown), com esta estrutura:
-        {
-          "componenteCurricular": "string",
-          "anoTurma": "série identificada (ex: 9º Ano EF)",
-          "unidadeRegional": "string",
-          "escola": "string",
-          "objetivo": "string",
-          "aes": [
-            {
-              "aprendizagem": "descrição da habilidade",
-              "inicio": "YYYY-MM-DD",
-              "termino": "YYYY-MM-DD",
-              "conteudos": "G1: ...\\nG2: ...\\nG3: ...\\nAulas: ..."
-            }
-          ],
-          "materialDidatico": "lista de materiais",
-          "bimestre": "1º Bimestre | 2º Bimestre | 3º Bimestre | 4º Bimestre"
-        }
-
-        Importante: Mantenha a ordem cronológica das aulas.
+        Retorne APENAS um objeto JSON válido.
       `;
 
-      const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
+      const result = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            properties: {
+              componenteCurricular: { type: "string" },
+              anoTurma: { type: "string" },
+              unidadeRegional: { type: "string" },
+              escola: { type: "string" },
+              objetivo: { type: "string" },
+              aes: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    aprendizagem: { type: "string" },
+                    inicio: { type: "string" },
+                    termino: { type: "string" },
+                    conteudos: { type: "string" }
+                  },
+                  required: ["aprendizagem", "inicio", "termino", "conteudos"]
+                }
+              },
+              materialDidatico: { type: "string" },
+              bimestre: { type: "string" }
+            },
+            required: ["componenteCurricular", "anoTurma", "objetivo", "aes", "bimestre"]
+          }
+        }
+      });
+
+      const responseText = result.text;
+      if (!responseText) {
+        throw new Error("Resposta da IA vazia");
+      }
       
-      // Clean potential markdown or extra text to get only JSON
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : responseText;
-      
-      res.json(JSON.parse(jsonStr));
+      res.json(JSON.parse(responseText.trim()));
     } catch (error) {
       console.error("Erro no processamento da IA:", error);
       res.status(500).json({ error: "Falha ao processar conteúdo com IA" });
