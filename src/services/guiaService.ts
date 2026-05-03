@@ -40,30 +40,22 @@ export const INITIAL_DATA: GuiaData = {
 
 export async function parseCMSPContent(text: string): Promise<Partial<GuiaData>> {
   try {
-      const apiPath = "/api/parse-cmsp";
-      
-      console.log(`Chamando API: ${apiPath}`);
-      const response = await fetch(apiPath, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
+    const response = await fetch("/api/parse-cmsp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
 
-      const responseText = await response.text();
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Falha ao processar conteúdo com Vertex AI");
+    }
 
-      if (!response.ok) {
-        console.error("Erro da API (status", response.status, "):", responseText);
-        throw new Error(`Erro ${response.status}: Falha ao processar conteúdo.`);
-      }
-      
-      try {
-        return JSON.parse(responseText);
-      } catch (e) {
-        console.error("Resposta não é JSON:", responseText);
-        throw new Error("O servidor retornou um formato inválido. Tente novamente.");
-      }
-  } catch (error) {
+    return await response.json();
+  } catch (error: any) {
     console.error("Erro ao analisar conteúdo:", error);
-    throw error;
+    throw new Error(error.message || "Falha ao conectar com o serviço de IA. Tente novamente.");
   }
 }

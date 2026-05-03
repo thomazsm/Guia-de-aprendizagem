@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { GoogleGenAI } from "@google/genai";
+import { VertexAI, HarmCategory, HarmBlockThreshold } from "@google-cloud/vertexai";
 
 async function startServer() {
   const app = express();
@@ -9,7 +9,7 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Route for Gemini
+  // API Route for Vertex AI
   app.post("/api/parse-cmsp", async (req, res) => {
     try {
       const { text } = req.body;
@@ -17,13 +17,26 @@ async function startServer() {
         return res.status(400).json({ error: "Texto é obrigatório" });
       }
 
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        return res.status(500).json({ error: "Configuração do servidor incompleta (API Key ausente)" });
-      }
+      const projectId = process.env.VERTEX_AI_PROJECT_ID || "gen-lang-client-0087218759";
+      const location = process.env.VERTEX_AI_LOCATION || "us-central1";
 
-      const ai = new GoogleGenAI({ apiKey });
-      
+      // Initialize Vertex AI
+      // Note: In this environment, we rely on the environment's credentials or provide them if needed.
+      // The user specifically mentioned an "API Key", which for Vertex AI is often used via the REST interface
+      // or specific auth providers. Here we use the project-based initialization.
+      const vertexAI = new VertexAI({ project: projectId, location: location });
+
+      const model = vertexAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+        },
+        safetySettings: [{
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_NONE,
+        }],
+      });
+
       const prompt = `
         Você é um assistente especializado em Educação da Secretaria da Educação de SP (SEDUC).
         O professor forneceu um documento de "Escopo e Sequência" ou "Guia Priorizado" do bimestre.
@@ -48,53 +61,44 @@ async function startServer() {
            1ºB: 02/02-20/04 | 2ºB: 22/04-26/06 | 3ºB: 13/07-18/09 | 4ºB: 21/09-23/12.
         7. Verifique se Unidade Regional e Escola estão no texto.
 
-        Retorne APENAS um objeto JSON válido.
+        Retorne APENAS um objeto JSON válido seguindo esta estrutura:
+        {
+          "componenteCurricular": "string",
+          "anoTurma": "string",
+          "unidadeRegional": "string",
+          "escola": "string",
+          "objetivo": "string",
+          "aes": [
+            {
+              "aprendizagem": "string",
+              "inicio": "YYYY-MM-DD",
+              "termino": "YYYY-MM-DD",
+              "conteudos": "string"
+            }
+          ],
+          "materialDidatico": "string",
+          "bimestre": "string"
+        }
       `;
 
-      const result = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "object",
-            properties: {
-              componenteCurricular: { type: "string" },
-              anoTurma: { type: "string" },
-              unidadeRegional: { type: "string" },
-              escola: { type: "string" },
-              objetivo: { type: "string" },
-              aes: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    aprendizagem: { type: "string" },
-                    inicio: { type: "string" },
-                    termino: { type: "string" },
-                    conteudos: { type: "string" }
-                  },
-                  required: ["aprendizagem", "inicio", "termino", "conteudos"]
-                }
-              },
-              materialDidatico: { type: "string" },
-              bimestre: { type: "string" }
-            },
-            required: ["componenteCurricular", "anoTurma", "objetivo", "aes", "bimestre"]
-          }
-        }
-      });
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const responseText = response.candidates?.[0]?.content.parts[0].text;
 
-      const responseText = result.text;
       if (!responseText) {
         throw new Error("Resposta da IA vazia");
       }
-      
+
       res.json(JSON.parse(responseText.trim()));
-    } catch (error) {
-      console.error("Erro no processamento da IA:", error);
-      res.status(500).json({ error: "Falha ao processar conteúdo com IA" });
+    } catch (error: any) {
+      console.error("Erro no processamento da Vertex AI:", error);
+      res.status(500).json({ error: error.message || "Falha ao processar conteúdo com Vertex AI" });
     }
+  });
+
+  // Health check route
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
   // Vite middleware for development

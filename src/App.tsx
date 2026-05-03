@@ -335,7 +335,7 @@ export default function App() {
           <div className="space-y-6">
             {data.aes.map((item, idx) => (
               <motion.div
-                key={`aes-row-${idx}`}
+                key={`aes-row-${idx}-${item.aprendizagem.length}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="p-8 bg-stone-50 dark:bg-stone-800/30 rounded-[28px] border border-stone-200 dark:border-stone-800 relative group transition-colors hover:border-natural-primary/30"
@@ -523,7 +523,7 @@ export default function App() {
         </div>
 
         {data.aes.map((item, idx) => (
-            <div key={`${idx}-${item.aprendizagem.slice(0, 10)}`} style={{ borderColor: '#000000', borderLeftWidth: '1px', borderRightWidth: '1px', borderBottomWidth: '1px', borderStyle: 'solid', color: '#000000' }} className="grid grid-cols-[1fr_50px_50px_1fr] min-h-[30px] text-[10px]">
+            <div key={`print-row-${idx}-${item.aprendizagem.length}`} style={{ borderColor: '#000000', borderLeftWidth: '1px', borderRightWidth: '1px', borderBottomWidth: '1px', borderStyle: 'solid', color: '#000000' }} className="grid grid-cols-[1fr_50px_50px_1fr] min-h-[30px] text-[10px]">
                 <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid', color: '#000000' }} className="p-1.5 whitespace-pre-wrap leading-tight">{item.aprendizagem}</div>
                 <div style={{ borderColor: '#000000', borderRightWidth: '1px', borderRightStyle: 'solid', color: '#000000' }} className="p-1 flex items-center justify-center text-center text-[9px]">
                   {item.inicio ? new Date(item.inicio + 'T00:00:00').toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'}) : '-'}
@@ -579,6 +579,7 @@ export default function App() {
       <AnimatePresence>
         {toast && (
           <motion.div
+            key="toast-notification"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
@@ -594,8 +595,9 @@ export default function App() {
         )}
 
         {showConfirmReset && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div key="reset-modal-container" className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div
+              key="reset-modal-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -603,6 +605,7 @@ export default function App() {
               className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
             />
             <motion.div
+              key="reset-modal-content"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -634,8 +637,9 @@ export default function App() {
         )}
 
         {showAiModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div key="ai-modal-container" className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div
+              key="ai-modal-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -643,6 +647,7 @@ export default function App() {
               className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
             />
             <motion.div
+              key="ai-modal-content"
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
